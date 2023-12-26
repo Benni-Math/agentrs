@@ -12,10 +12,12 @@
     agentrs = {
       url = "github:Benni-Math/agentrs";
       inputs.nixpkgs.follows = "nixpkgs";
-    }
+    };
+
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, pyproject-nix, agentrs, ... }:
+  outputs = { self, nixpkgs, pyproject-nix, agentrs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -39,9 +41,9 @@
           pkgs.mkShell {
             packages = [
               pythonEnv
-              agentrs
+              agentrs.packages.${system}
               pkgs.just
-            ]
+            ];
           };
 
         # TODO: add Docker image build

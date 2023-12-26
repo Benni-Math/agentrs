@@ -2,7 +2,7 @@
 name = "my-abm"
 version = "0.1.0"
 requires-python = ">=3.7"
-description = "Quickly develop and run ABMs! Written in Rust for use in Python."
+description = "Quickly develop and run ABMs!"
 authors = [ {name = "Benedikt Arnarsson", email = "benediktjens.arnarsson@gmail.com"} ]
 license = "MIT"
 classifiers = [
