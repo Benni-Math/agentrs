@@ -24,7 +24,12 @@
   };
 
   outputs = { self, nixpkgs, crane, fenix, flake-utils, advisory-db, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+    ({
+        templates.default = {
+          description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
+          path = ./template;
+        };
+    } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
@@ -147,12 +152,5 @@
             pkgs.just
           ];
         };
-
-        templates = {
-          default = {
-            description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
-            path = ./template;
-          };
-        };
-      });
+      }));
 }
