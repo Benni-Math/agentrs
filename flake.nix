@@ -147,5 +147,12 @@
             pkgs.just
           ];
         };
+
+        templates = {
+          default = {
+            description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
+            path = ./template;
+          };
+        };
       });
 }
