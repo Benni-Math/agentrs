@@ -1,0 +1,22 @@
+[build-system]
+requires = ["maturin>=1.3,<2.0"]
+build-backend = "maturin"
+
+# [tool.poetry.dev-dependencies]
+# pytest = "^7.4.3"
+# pytest-benchmark = "^4.0.0"
+
+[project]
+name = "agentrs"
+version = "0.1.0"
+requires-python = ">=3.7"
+description = "Quickly develop and run ABMs! Written in Rust for use in Python."
+authors = [ {name = "Benedikt Arnarsson", email = "benediktjens.arnarsson@gmail.com"} ]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
