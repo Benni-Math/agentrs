@@ -9,20 +9,24 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    agentrs = {
-      url = "github:Benni-Math/agentrs";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    agentrs.url = "github:Benni-Math/agentrs";
 
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = { self, nixpkgs, pyproject-nix, agentrs, flake-utils, ... }:
+    let
+      pkgsForSystem = system: import nixpkgs {
+        # if you have additional overlays, you may add them here
+        overlays = [
+          agentrs.overlays.default
+        ];
+        inherit system;
+      };
+    in
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
-
-        inherit (pkgs) lib;
+        pkgs = pkgsForSystem system;
 
         python = pkgs.python311Full;
 
@@ -41,7 +45,7 @@
           pkgs.mkShell {
             packages = [
               pythonEnv
-              agentrs.packages.${system}
+              pkgs.agentrs
               pkgs.just
             ];
           };

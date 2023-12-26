@@ -29,6 +29,9 @@
           description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
           path = ./template;
         };
+
+        overlays.default =
+          (final: prev: { inherit (self.packages.${final.system}) agentrs; });
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
