@@ -9,3 +9,6 @@ build-wheel:
 
 build-wheel PLATFORM:
     nix build .#packages.{{PLATFORM}}.wheel
+
+generate-ci:
+    maturin generate-ci github
