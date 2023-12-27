@@ -1,64 +1,32 @@
 {
-  description = "Build a cargo project";
+  description = "Build an Agent-Based Model!";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    pyproject-nix = {
-      url = "github:nix-community/pyproject.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    agentrs.url = "github:Benni-Math/agentrs";
+    dream2nix.url = "github:nix-community/dream2nix";
+    nixpkgs.follows = "dream2nix/nixpkgs";
 
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, pyproject-nix, agentrs, flake-utils, ... }:
-    let
-      pkgsForSystem = system: import nixpkgs {
-        # if you have additional overlays, you may add them here
-        overlays = [
-          agentrs.overlays.default
-        ];
-        inherit system;
-      };
-    in
+  outputs = inputs@{ self, dream2nix, nixpkgs, flake-utils, ... }:
     flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = pkgsForSystem system;
-
-        python = pkgs.python311Full;
-
-        project = pyproject-nix.lib.project.loadPyproject { projectRoot = ./.; };
-      in
       {
         # TODO: add Jupyter devShell
-        devShells.default =
-          let
-            # Returns a function that can be passed to `python.withPackages`
-            arg = project.renderers.withPackages { inherit python; };
-
-            # Returns a wrapped environment (virtualenv like) with all our packages
-            pythonEnv = python.withPackages arg;
-          in
-          pkgs.mkShell {
-            packages = [
-              pythonEnv
-              pkgs.agentrs
-              pkgs.just
-            ];
-          };
-
         # TODO: add Docker image build
-        packages.default =
-          let
-            # Returns an attribute set that can be passed to `buildPythonPackage`.
-            attrs = project.renderers.buildPythonPackage { inherit python; };
-          in
-          python.pkgs.buildPythonPackage (attrs // {
-            env.CUSTOM_ENVVAR = "hello";
-          });
+        packages.default = dream2nix.lib.evalModules {
+          packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
+          modules = [
+            ./default.nix
+            {
+              paths.projectRoot = ./.;
+              # can be changed to ".git" or "flake.nix" to get rid of .project-root
+              paths.projectRootFile = "flake.nix";
+              paths.package = ./.;
+            }
+          ];
+        };
     
       });
 }

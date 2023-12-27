@@ -30,8 +30,7 @@
           path = ./template;
         };
 
-        overlays.default =
-          (final: prev: { inherit (self.packages.${final.system}) agentrs; });
+        overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -85,6 +84,14 @@
           buildPhaseCargoCommand = "maturin build --release --manylinux off";
           installPhaseCommand = "${python.pkgs.pip}/bin/pip install target/wheels/*.whl --no-index --prefix=$out --no-cache";
         });
+
+        # Build wheel, for distribution through PyPi
+        agentrs-wheel = craneLib.mkCargoDerivation (commonArgs // {
+          inherit cargoArtifacts;
+          doCheck = false;
+          buildPhaseCargoCommand = "maturin build --release --manylinux off";
+          installPhaseCommand = "mkdir -p $out && cp target/wheels/*.whl $out/";
+        });
       in
       {
         checks = {
@@ -133,6 +140,7 @@
 
         packages = {
           default = agentrs-crate;
+          wheel = agentrs-wheel;
         } // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
           agentrs-crate-llvm-coverage = craneLibLLvmTools.cargoLlvmCov (commonArgs // {
             inherit cargoArtifacts;
@@ -153,6 +161,7 @@
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
             pkgs.just
+            pkgs.twine
           ];
         };
       }));
