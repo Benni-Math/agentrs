@@ -33,7 +33,12 @@
       overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
     } // flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = (import nixpkgs {
+          overlays = [
+            fenix.overlays.default
+          ];
+          inherit system;
+        });
 
         inherit (pkgs) lib;
 
@@ -59,6 +64,7 @@
             pkgs.maturin
             python.pkgs.pip
             craneLibLLvmTools.rustc
+            pkgs.rust-analyzer-nightly
           ];
 
           buildInputs = [
