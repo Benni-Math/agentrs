@@ -25,12 +25,12 @@
 
   outputs = { self, nixpkgs, crane, fenix, flake-utils, advisory-db, ... }:
     ({
-        templates.default = {
-          description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
-          path = ./template;
-        };
+      templates.default = {
+        description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
+        path = ./template;
+      };
 
-        overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
+      overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
@@ -63,6 +63,7 @@
 
           buildInputs = [
             # Add additional build inputs here
+            python.pkgs.numpy
           ] ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
             pkgs.libiconv

@@ -1,3 +1,6 @@
+mod operation;
+mod model;
+
 use pyo3::prelude::*;
 
 /// Formats the sum of two numbers as string.

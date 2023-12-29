@@ -9,4 +9,8 @@ name = "agentrs"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.19.0"
+numpy = "0.20.0"
+polars = "0.35.4"
+pyo3 = "^0.20.0"
+rayon = "1.8.0"
+rustc-hash = "1.1.0"
