@@ -30,13 +30,21 @@
         path = ./template;
       };
 
-      overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
+      overlays.default = (final: prev:
+        {
+          python311Full = prev.python311Full.override {
+            packageOverrides = (pyFinal: pyPrev: { agentrs = self.packages.${final.system}.default; });
+          };
+        }
+      );
     } // flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = (import nixpkgs {
           overlays = [
             fenix.overlays.default
+            self.overlays.default
           ];
+        #   config.allowUnfree = true;
           inherit system;
         });
 
@@ -47,12 +55,15 @@
         craneLib = crane.lib.${system};
         src = craneLib.cleanCargoSource (craneLib.path ./.);
 
-        craneLibLLvmTools = craneLib.overrideToolchain
-          (fenix.packages.${system}.complete.withComponents [
+        fenixToolchain = fenix.packages.${system}.complete;
+        devToolchain = fenixToolchain.withComponents [
             "cargo"
             "llvm-tools"
             "rustc"
-          ]);
+            "rust-src"
+          ];
+
+        craneLibLLvmTools = craneLib.overrideToolchain devToolchain;
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
@@ -63,9 +74,11 @@
           nativeBuildInputs = [
             pkgs.maturin
             python.pkgs.pip
-            craneLibLLvmTools.rustc
-            pkgs.rust-analyzer-nightly
+            # pkgs.rust-analyzer-nightly
+            devToolchain
           ];
+
+          RUST_SRC_PATH="${fenixToolchain.rust-src}/lib/rustlib/src/rust/library/";
 
           buildInputs = [
             # Add additional build inputs here
@@ -146,7 +159,8 @@
         };
 
         packages = {
-          default = agentrs-crate;
+          default = python.pkgs.toPythonModule agentrs-crate;
+          crate = agentrs-crate;
           wheel = agentrs-wheel;
         } // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
           agentrs-crate-llvm-coverage = craneLibLLvmTools.cargoLlvmCov (commonArgs // {
@@ -164,9 +178,11 @@
 
           # Additional dev-shell environment variables can be set directly
           # MY_CUSTOM_DEVELOPMENT_VAR = "something else";
+          inherit (commonArgs) RUST_SRC_PATH;
 
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
+            python.pkgs.agentrs
             pkgs.just
             pkgs.twine
           ];
