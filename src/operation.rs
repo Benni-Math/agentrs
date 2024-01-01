@@ -1,3 +1,3 @@
-pub enum Operation {
-    AddToProperty(&str),
+pub enum Operation<'a> {
+    AddToProperty(&'a str),
 }
