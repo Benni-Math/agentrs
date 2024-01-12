@@ -1,5 +1,5 @@
 {
-  description = "Build a cargo project";
+  description = "Build fast ABMs in Python, with the help of Rust.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -31,10 +31,12 @@
       };
 
       overlays.default = (final: prev:
+        let
+          agentrsOverride = { packageOverrides = (pyFinal: pyPrev: { agentrs = self.packages.${final.system}.default; }); };
+        in
         {
-          python311Full = prev.python311Full.override {
-            packageOverrides = (pyFinal: pyPrev: { agentrs = self.packages.${final.system}.default; });
-          };
+          python3 = prev.python3.override agentrsOverride;
+          python311Full = prev.python311Full.override agentrsOverride;
         }
       );
     } // flake-utils.lib.eachDefaultSystem (system:
