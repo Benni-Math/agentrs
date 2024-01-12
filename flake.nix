@@ -1,5 +1,5 @@
 {
-  description = "Build a cargo project";
+  description = "Build fast ABMs in Python, with the help of Rust.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -25,15 +25,30 @@
 
   outputs = { self, nixpkgs, crane, fenix, flake-utils, advisory-db, ... }:
     ({
-        templates.default = {
-          description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
-          path = ./template;
-        };
+      templates.default = {
+        description = "Develop an ABM with `agentrs` - with easy image creation for running remotely.";
+        path = ./template;
+      };
 
-        overlays.default = (final: prev: { inherit (self.packages.${final.system}) agentrs; });
+      overlays.default = (final: prev:
+        let
+          agentrsOverride = { packageOverrides = (pyFinal: pyPrev: { agentrs = self.packages.${final.system}.default; }); };
+        in
+        {
+          python3 = prev.python3.override agentrsOverride;
+          python311Full = prev.python311Full.override agentrsOverride;
+        }
+      );
     } // flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = (import nixpkgs {
+          overlays = [
+            fenix.overlays.default
+            self.overlays.default
+          ];
+        #   config.allowUnfree = true;
+          inherit system;
+        });
 
         inherit (pkgs) lib;
 
@@ -42,12 +57,15 @@
         craneLib = crane.lib.${system};
         src = craneLib.cleanCargoSource (craneLib.path ./.);
 
-        craneLibLLvmTools = craneLib.overrideToolchain
-          (fenix.packages.${system}.complete.withComponents [
+        fenixToolchain = fenix.packages.${system}.complete;
+        devToolchain = fenixToolchain.withComponents [
             "cargo"
             "llvm-tools"
             "rustc"
-          ]);
+            "rust-src"
+          ];
+
+        craneLibLLvmTools = craneLib.overrideToolchain devToolchain;
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
@@ -58,11 +76,15 @@
           nativeBuildInputs = [
             pkgs.maturin
             python.pkgs.pip
-            craneLibLLvmTools.rustc
+            # pkgs.rust-analyzer-nightly
+            devToolchain
           ];
+
+          RUST_SRC_PATH="${fenixToolchain.rust-src}/lib/rustlib/src/rust/library/";
 
           buildInputs = [
             # Add additional build inputs here
+            python.pkgs.numpy
           ] ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
             pkgs.libiconv
@@ -139,7 +161,8 @@
         };
 
         packages = {
-          default = agentrs-crate;
+          default = python.pkgs.toPythonModule agentrs-crate;
+          crate = agentrs-crate;
           wheel = agentrs-wheel;
         } // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {
           agentrs-crate-llvm-coverage = craneLibLLvmTools.cargoLlvmCov (commonArgs // {
@@ -157,9 +180,11 @@
 
           # Additional dev-shell environment variables can be set directly
           # MY_CUSTOM_DEVELOPMENT_VAR = "something else";
+          inherit (commonArgs) RUST_SRC_PATH;
 
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
+            python.pkgs.agentrs
             pkgs.just
             pkgs.twine
           ];
