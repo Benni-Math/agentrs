@@ -13,6 +13,7 @@ in {
 
   deps = {nixpkgs, ...}: {
     python = nixpkgs.python311Full;
+    agentrs = nixpkgs.python311Full.pkgs.agentrs;
   };
 
   inherit (pyproject.project) name version;

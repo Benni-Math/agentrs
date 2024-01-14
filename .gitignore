@@ -1,6 +1,7 @@
 /target
 result*
 .direnv
+repos/
 
 # Reference: https://nixos.org/manual/nixpkgs/unstable/#sec-darwin-builder
 # For those using nix run nixpkgs#darwin.linux-builder

@@ -8,15 +8,21 @@
     nixpkgs.follows = "dream2nix/nixpkgs";
 
     flake-utils.url = "github:numtide/flake-utils";
+    agentrs.url = "github:Benni-Math/agentrs";
   };
 
-  outputs = inputs@{ self, dream2nix, nixpkgs, flake-utils, ... }:
+  outputs = inputs@{ self, dream2nix, nixpkgs, flake-utils, agentrs, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       {
         # TODO: add Jupyter devShell
         # TODO: add Docker image build
         packages.default = dream2nix.lib.evalModules {
-          packageSets.nixpkgs = inputs.dream2nix.inputs.nixpkgs.legacyPackages.${system};
+          packageSets.nixpkgs = import inputs.dream2nix.inputs.nixpkgs {
+            overlays = [
+                agentrs.overlays.default
+            ];
+            inherit system;
+          };
           modules = [
             ./default.nix
             {
@@ -27,6 +33,6 @@
             }
           ];
         };
-    
+
       });
 }
