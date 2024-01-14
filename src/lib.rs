@@ -1,5 +1,8 @@
-mod operation;
+// TODO: re-order module hierarchy by dependency
+mod agent;
+mod datadict;
 mod model;
+mod operation;
 
 use pyo3::prelude::*;
 
@@ -11,7 +14,7 @@ fn sum_as_string(a: usize, b: usize) -> PyResult<String> {
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn agentrs(_py: Python, m: &PyModule) -> PyResult<()> {
+fn core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sum_as_string, m)?)?;
     Ok(())
 }

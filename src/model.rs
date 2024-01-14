@@ -1,37 +1,48 @@
+// TODO: make this pluggable? feature-flag?
 use rustc_hash::FxHashMap;
 
+use crate::agent::{ AgentFactory, Agent };
+use crate::datadict::DataDict;
 use crate::operation::Operation;
+
 
 /// Main API (rough outline)
 /// TODO: add PyO3 types
+/// TODO: read krABMaga code
 trait ModelFrame<'a> {
-    fn new(parameters: FxHashMap<&'a str, &'a str>, _run_id: Option<usize>, forwarded_args: FxHashMap<&'a str, &'a str>) -> Self;
+    fn new(
+        parameters: FxHashMap<&'a str, &'a str>,
+        _run_id: Option<usize>,
+        forwarded_args: FxHashMap<&'a str, &'a str>,
+    ) -> Self;
     fn stop();
 }
 
-
 pub struct Model<'a> {
     name: String,
-    // TODO: what number type to use?
-    // What about floats? Or just stick to integers?
-    // Are properties not specific to Agents?
-    properties: FxHashMap<&'a str, i64>,
-    // TODO: also need parameters?
     parameters: FxHashMap<&'a str, f64>,
-    // TODO: something more efficient than Vec<Agent>?
-    operations: Vec<Operation<'a>>,
+    agent_list: Vec<Box<Agent<'a>>>,
 }
 
-struct ModelBuilder<'a> {
+pub struct ModelBuilder<'a> {
     name: String,
-    properties: FxHashMap<&'a str, i64>,
-    parameters: FxHashMap<&'a str, f64>,
-    operations: Vec<Operation<'a>>,
+    parameters: Option<FxHashMap<&'a str, f64>>,
+    // Will first assume that we have a homogeneous list of agents
+    // TODO: add in capability for multiple types of agents (using multiple AgentFactories)
+    // agent_list: Vec<Agent<'a>>,
+    init_prop: Option<FxHashMap<&'a str, i64>>,
+    operations: Option<Vec<Operation<'a>>>,
+    // TODO: typed-builder? -> want to add operations and then create the factory, and then you can build
+    agent_factory: Option<AgentFactory<'a>>,
 }
 
-impl Model<'_> {
-    fn builder(name: String) -> ModelBuilder<'static> {
+impl<'a> Model<'_> {
+    pub fn builder(name: String) -> ModelBuilder<'static> {
         ModelBuilder::new(name)
+    }
+
+    pub fn run(self) -> DataDict<'a> {
+        DataDict::new()
     }
 }
 
@@ -40,18 +51,19 @@ impl<'a> ModelBuilder<'a> {
     fn new(name: String) -> Self {
         Self {
             name,
-            parameters: FxHashMap::default(),
-            properties: FxHashMap::default(),
-            operations: Vec::new(),
+            parameters: None,
+            init_prop: None,
+            operations: None,
+            agent_factory: None,
         }
     }
 
-    fn build(self) -> Model<'a> {
-        Model {
-            name: self.name.clone(),
-            parameters: self.parameters,
-            properties: self.properties,
-            operations: self.operations,
-        }
-    }
+    // fn build(self) -> Model<'a> {
+    //     let agent_factory = self.agent_factory.unwrap();
+    //     Model {
+    //         name: self.name,
+    //         parameters: self.parameters.unwrap(),
+    //         agent_list: vec![agent_factory.create_agent()],
+    //     }
+    // }
 }

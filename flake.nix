@@ -36,6 +36,7 @@
         in
         {
           python3 = prev.python3.override agentrsOverride;
+          python311 = prev.python311.override agentrsOverride;
           python311Full = prev.python311Full.override agentrsOverride;
         }
       );
@@ -52,7 +53,7 @@
 
         inherit (pkgs) lib;
 
-        python = pkgs.python311Full;
+        python = pkgs.python311;
 
         craneLib = crane.lib.${system};
         src = craneLib.cleanCargoSource (craneLib.path ./.);

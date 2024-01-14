@@ -9,6 +9,7 @@ name = "agentrs"
 crate-type = ["cdylib"]
 
 [dependencies]
+hecs = "0.10.4"
 numpy = "^0.20.0"
 polars = "^0.35.4"
 pyo3 = "^0.20.0"
