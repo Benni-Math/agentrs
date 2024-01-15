@@ -115,6 +115,32 @@
           buildPhaseCargoCommand = "maturin build --release --manylinux off";
           installPhaseCommand = "mkdir -p $out && cp target/wheels/*.whl $out/";
         });
+
+        agentrs-core-module = python.pkgs.toPythonModule agentrs-crate;
+
+        agentrs-py = pkgs.python311Packages.buildPythonPackage {
+            pname = "agentrs";
+            version = "0.1.0";
+            src = ./agentrs-py;
+            nativeBuildInputs = with pkgs.python311Packages;  [
+                setuptools
+                wheel
+            ];
+            propagatedBuildInputs = [
+                agentrs-core-module
+            ];
+            meta = with lib; {
+                description = "Build an Agent-Based Model!";
+                license = licenses.mit;
+                homepage = "https://github.com/Benni-Math/agentrs";
+                maintainers = [{
+                    email = "benediktjens.arnarsson@gmail.com";
+                    github = "Benni-Math";
+                    githubId = 55165491;
+                    name = "Benedikt Arnarsson";
+                }];
+            };
+        };
       in
       {
         checks = {
@@ -162,7 +188,7 @@
         };
 
         packages = {
-          default = python.pkgs.toPythonModule agentrs-crate;
+          default = agentrs-py;
           crate = agentrs-crate;
           wheel = agentrs-wheel;
         } // lib.optionalAttrs (!pkgs.stdenv.isDarwin) {

@@ -7,7 +7,7 @@ build-backend = "maturin"
 # pytest-benchmark = "^4.0.0"
 
 [project]
-name = "agentrs"
+name = "agentrs_core"
 version = "0.1.0"
 requires-python = ">=3.7"
 description = "Quickly develop and run ABMs! Written in Rust for use in Python."
