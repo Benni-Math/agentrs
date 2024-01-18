@@ -126,8 +126,12 @@
                 setuptools
                 wheel
             ];
-            propagatedBuildInputs = [
+            propagatedBuildInputs = with pkgs.python311Packages; [
                 agentrs-core-module
+                scipy
+                pandas
+                tqdm
+                joblib
             ];
             meta = with lib; {
                 description = "Build an Agent-Based Model!";
