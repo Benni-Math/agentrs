@@ -13,18 +13,11 @@
     let
       # Inherit helpers
       inherit (nixpkgs) lib;
-      inherit (builtins)
-          attrNames
-          concatMap
-          filter
-          fromJson
-          map
-          readDir
-          readFile;
+      inherit (builtins) map;
 
       # Helpers:
       reqToPkgs = req: ps: (
-        builtins.map (pyPkg: ps.${pyPkg}) req
+        map (pyPkg: ps.${pyPkg}) req
       );
 
       # Requirements:
@@ -37,6 +30,9 @@
     in
     flake-utils.lib.eachDefaultSystem (system:
       let
+        dockerImageName = "abm-experiment";
+        dockerComposeName = "abm-experiment-service";
+
         localOverlay = import ./nix/overlay.nix;
         pkgs = (import nixpkgs {
           overlays = [
@@ -83,7 +79,7 @@
         packages.experimentSrc = experimentSrc;
 
         packages.docker = pkgs.dockerTools.buildLayeredImage {
-          name = "abm-experiment";
+          name = dockerImageName;
           tag = "latest";
           contents = pkgs.buildEnv {
             name = "image-root";
@@ -102,15 +98,16 @@
           };
           config =  {
             Entrypoint = [ "/bin/python" "runexp.py" ];
-            Volumes = {
-              "/tmp/data": {};
-            };
+            Env = [
+              "MODEL_INPUT_DIR=/data/model_input"
+              "MODEL_OUTPUT_DIR=/data/model_output"
+            ];
             WorkingDir = "/app";
           };
         };
 
         packages.default = derivation rec {
-          name = "abm-experiment";
+          name = "${dockerImageName}-zip";
           builder = "${pkgs.bash}/bin/bash";
           args = [
             (pkgs.writeText "make-exp.sh"
@@ -119,6 +116,7 @@
               mkdir -p $out
               cp $image $out
               cp $runContainer/run-experiment.sh $out
+              cp $composeYaml/compose.yaml $out
               ''
             )
           ];
@@ -126,6 +124,19 @@
           inherit (pkgs) coreutils;
           image = self.packages.${system}.docker;
           imageArchive = builtins.baseNameOf image;
+          composeYaml = pkgs.writeTextFile {
+            name = "compose.yaml";
+            text = ''
+              version: '3.3'
+              services:
+                ${dockerComposeName}:
+                  image: ${dockerImageName}:latest
+                  volumes:
+                    - './model_input:/data/model_input'
+                    - './model_output:/data/model_output'
+            '';
+            destination = "/compose.yaml";
+          };
           runContainer = pkgs.writeTextFile {
             name = "run-experiment.sh";
             text = ''
@@ -134,7 +145,7 @@
                 gzip -d ${imageArchive}
               fi
               docker load < *.tar
-              docker run -t abm-experiment:latest
+              exec docker compose run --rm -it ${dockerComposeName}
             '';
             executable = true;
             destination = "/run-experiment.sh";

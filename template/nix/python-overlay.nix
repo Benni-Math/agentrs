@@ -11,7 +11,7 @@ pyFinal: pyPrev:
 {
   # This is required since python overrides do not compose
   agentrs = pkgs.python311.pkgs.agentrs;
-  # FIXME: why do I need to manually pass in `args`???
+
   aiohttp = pkgs.callPackage ./python-pkgs/aiohttp (pkgs // pkgs.python311Packages);
-  pillow = if pkgs.stdenv.isDarwin then pkgs.callPackage ./python-pkgs/pillow.nix (pkgs // pkgs.python311Packages) else pyPrev.pillow;
+#   pillow = if pkgs.stdenv.isDarwin then pkgs.callPackage ./python-pkgs/pillow.nix (pkgs // pkgs.python311Packages) else pyPrev.pillow;
 }

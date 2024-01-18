@@ -203,9 +203,9 @@
           });
         };
 
-        apps.default = flake-utils.lib.mkApp {
-          drv = agentrs-crate;
-        };
+        # apps.default = flake-utils.lib.mkApp {
+        #   drv = agentrs-crate;
+        # };
 
         devShells.default = craneLib.devShell {
           # Inherit inputs from checks.
