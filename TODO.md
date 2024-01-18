@@ -18,3 +18,6 @@
 At some point:
  - integrate with dentalcaries
  - integrate with CERDA
+ - make a better library for writing `runexp.py` and `zipexp.py`
+    - document these things
+ - still need to debug the volumes not mounting properly

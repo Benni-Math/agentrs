@@ -1,3 +1,7 @@
-# FIXME: ?
-lock:
-    bash -c $(nix-build /nix/store/r8fmga4glrl90dl68ra9i3mmbniaaj2y-refresh.drv --no-link)/bin/refresh
+zip-exp:
+    nix build .#packages.x86_64-linux.docker
+    python zipexp.py
+
+zip-exp PLATFORM:
+    nix build .#packages.{{PLATFORM}}.docker
+    python zipexp.py
