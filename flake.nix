@@ -132,6 +132,8 @@
                 pandas
                 tqdm
                 joblib
+                matplotlib
+                networkx
             ];
             meta = with lib; {
                 description = "Build an Agent-Based Model!";
@@ -216,7 +218,10 @@
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
             python.pkgs.agentrs
+            python.pkgs.pytest
             pkgs.just
+            pkgs.mypy
+            pkgs.ruff
             pkgs.twine
           ];
         };

@@ -17,20 +17,22 @@ __all__ = [
     'AgentList', 'AgentSet',
     # 'AgentIter', 'AgentDListIter', 'AttrIter',
     'AgentIter', 'AttrIter',
-    # 'Grid', 'GridIter',
-    # 'Space',
-    # 'Network', 'AgentNode',
+    'Grid', 'GridIter',
+    'Space',
+    'Network', 'AgentNode',
     'Experiment',
     'DataDict',
     'Sample', 'Values', 'Range', 'IntRange',
-    # 'gridplot', 'animate',
+    'gridplot', 'animate',
     'AttrDict'
 ]
 
 from .agent import Agent
 from .datadict import DataDict
 from .experiment import Experiment
+from .grid import Grid, GridIter
 from .model import Model
+from .network import Network, AgentNode
 from .sample import IntRange, Range, Sample, Values
 from .sequences import (
     AgentIter,
@@ -38,4 +40,6 @@ from .sequences import (
     AgentSet,
     AttrIter,
 )
+from .space import Space
 from .tools import AttrDict
+from .visualization import gridplot, animate

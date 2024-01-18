@@ -9,7 +9,7 @@ long_description = open('README.md').read()
 version = '0.1.0'
 
 setup(
-    name='rockstar',
+    name='agentrs',
     version=version,
     install_requires=[
         'agentrs_core'

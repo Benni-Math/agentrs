@@ -3,6 +3,7 @@ Agentpy Tools Module
 Content: Errors, generators, and base classes
 """
 
+from collections.abc import Sequence
 import contextlib
 from typing import Any, Generic, TypedDict, TypeVar
 
@@ -108,6 +109,54 @@ class AttrDict(dict):
 class TypedAttrDict(AttrDict, Generic[TDict]):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+class ListDict(Sequence):
+    """ List with fast deletion & lookup. """
+    # H/T Amber https://stackoverflow.com/a/15993515/14396787
+
+    def __init__(self, iterable):
+        self.item_to_position = {}
+        self.items = []
+        for item in iterable:
+            self.append(item)
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, item):
+        return self.items[item]
+
+    def __contains__(self, item):
+        return item in self.item_to_position
+
+    def extend(self, seq):
+        for s in seq:
+            self.append(s)
+
+    def append(self, item):
+        if item in self.item_to_position:
+            return
+        self.items.append(item)
+        self.item_to_position[item] = len(self.items)-1
+
+    def replace(self, old_item, new_item):
+        position = self.item_to_position.pop(old_item)
+        self.item_to_position[new_item] = position
+        self.items[position] = new_item
+
+    def remove(self, item):
+        position = self.item_to_position.pop(item)
+        last_item = self.items.pop()
+        if position != len(self.items):
+            self.items[position] = last_item
+            self.item_to_position[last_item] = position
+
+    def pop(self, index):
+        """ Remove an object from the group by index. """
+        self.remove(self[index])
 
 @contextlib.contextmanager
 def tqdm_joblib(tqdm_object):

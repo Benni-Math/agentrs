@@ -20,7 +20,7 @@ from .tools import AttrDict, make_list
 #-------------------------------------------------------------#
 
 PROJ_ROOT = Path(__file__).parents[2]
-MODEL_OUTPUT = Path(os.environ.get('CARIES_MODEL_OUTPUT_DIR') or (PROJ_ROOT / 'model_output'))
+MODEL_OUTPUT = Path(os.environ.get('MODEL_OUTPUT_DIR') or (PROJ_ROOT / 'model_output'))
 
 #-------------------------------------------------------------#
 #                           Helpers                           #
