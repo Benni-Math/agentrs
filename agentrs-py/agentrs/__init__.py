@@ -10,13 +10,13 @@ __all__ = [
     'AgentList', 'AgentSet',
     # 'AgentIter', 'AgentDListIter', 'AttrIter',
     'AgentIter', 'AttrIter',
-    # 'Grid', 'GridIter',
-    # 'Space',
-    # 'Network', 'AgentNode',
+    'Grid', 'GridIter',
+    'Space',
+    'Network', 'AgentNode',
     'Experiment',
     'DataDict',
     'Sample', 'Values', 'Range', 'IntRange',
-    # 'gridplot', 'animate',
+    'gridplot', 'animate',
     'AttrDict',
 ]
 
