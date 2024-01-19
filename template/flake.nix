@@ -7,9 +7,14 @@
       url = "github:Benni-Math/agentrs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    marimo = {
+      url = "github:Benni-Math/marimo";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {self, nixpkgs, flake-utils, agentrs, ... }@inputs:
+  outputs = {self, nixpkgs, flake-utils, agentrs, marimo, ... }@inputs:
     let
       # Inherit helpers
       inherit (nixpkgs) lib;
@@ -37,6 +42,7 @@
         pkgs = (import nixpkgs {
           overlays = [
             agentrs.overlays.default
+            marimo.overlays.default
             localOverlay
           ];
           inherit system;
@@ -67,10 +73,9 @@
             pythonEnv
             # ruff
             # mypy
+            pkgs.marimo
             python311Packages.agentrs
             python311Packages.pytest
-            # TODO: replace with marimo
-            python311Packages.notebook
             just
             dive
           ];
