@@ -1,68 +1,46 @@
+use std::sync::Arc;
+
+use pyo3::PyAny;
 use rustc_hash::FxHashMap;
 
-use crate::operation::Operation;
+// use crate::operation::Operation;
+// use crate::model::Model;
 
-/// First draft of agents could have a vector of properties,
-/// but this will cause Vec<Agents> to essentially be Vec<Vec<i64>>
-/// (or whatever numeric value we are using)
-/// Look into using some sort of 'smart array'? or SmallVec?
-/// The main thing is that I want the agents to be contiguous in memory
-/// And I don't want the Python code to have direct access to it,
-/// they can only 'build' it
-
-// TODO: fix lifetime mess
 pub struct Agent<'a> {
-    pub properties: FxHashMap<&'a str, i64>,
-    // Could also wrap operations as Box<AgentType> (useful when we add more info?)
-    // (or maybe Rc<AgentType>, since multiple 'owners'? but not mutation)
-    operations: &'a Vec<Operation<'a>>,
+    // TODO: change to Model after implementing in Rust
+    model: Arc<PyAny>,
+    // TODO: eventually make it so the `properties` is only on the factory
+    // and then we have a method of 'saving' so that the Agent just has a Vec
+    // along with a method of translating from property name to index
+    // a 'perfect' hashmap, or rather a trie or a flatbuffer
+    // https://www.reddit.com/r/rust/comments/126k7zq/creating_a_perfect_hashmap_from_string_keys_known/
+    properties: FxHashMap<&'static str, i64>,
+    // operations: &'a Vec<Operation<'a>>,
+    // FIXME: is this even necessary?
+    operations: FxHashMap<&'static str,&'a PyAny>,
 }
 
 impl Agent<'_> {
-    pub fn factory<'a>(
-        init_prop: FxHashMap<&'a str, i64>,
-        operations: Vec<Operation<'a>>,
-    ) -> AgentFactory<'a> {
-        AgentFactory::new(init_prop, operations)
-    }
-
-    /// Take a single time step for an agent.
-    /// First draft will not implement network interactions
-    /// This is not parallelized, since we are assuming parallelization on the model level
-    pub fn step(self) -> Self {
-        self.operations
-            .iter()
-            .fold(self, |agent, op| agent.apply(op))
-    }
-
-    fn apply(self, op: &Operation) -> Self {
-        match op {
-            Operation::AddToProperty(_) => { self }
-        }
-    }
-}
-
-pub struct AgentFactory<'a> {
-    // Not efficient to have this be a hashmap,
-    // then we are cloning it each time we build,
-    // will have tons of hashmaps, instead of using contiguous memory
-    // TODO: change this and the agent properties to something else
-    init_prop: FxHashMap<&'a str, i64>,
-    operations: Vec<Operation<'a>>,
-}
-
-impl<'a> AgentFactory<'a> {
-    fn new(init_prop: FxHashMap<&'a str, i64>, operations: Vec<Operation<'a>>) -> Self {
-        Self {
-            init_prop,
-            operations,
+    pub fn new<'a>(model: Arc<PyAny>, properties: FxHashMap<&'static str, i64>) -> Self {
+        Agent {
+            model,
+            properties,
+            operations: FxHashMap::default(),
         }
     }
 
-    pub fn create_agent(&self) -> Box<Agent> {
-        Box::new(Agent {
-            properties: self.init_prop.clone(),
-            operations: &self.operations,
-        })
+    pub fn get_property(&self, key: &str) -> Option<i64> {
+        self.properties.get(key).copied()
+    }
+
+    // TODO: this shouldn't be dynamically added, definitely inefficient
+    // create factory method that takes pre-determined class
+    // pull the operations from the class methods (maybe?)
+    pub fn add_operation<'a>(&mut self, op_name: &'static str, op: &'static PyAny) -> &Self {
+        if !PyAny::is_callable(op) {
+            panic!("(agentrs) Operation added was not a callable Python object.")
+        }
+        self.operations.insert(op_name, op);
+        self
     }
 }

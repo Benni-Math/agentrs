@@ -19,7 +19,7 @@ from .tools import AttrDict, make_list
 #                          Constant                           #
 #-------------------------------------------------------------#
 
-PROJ_ROOT = Path(__file__).parents[2]
+PROJ_ROOT = Path(os.getcwd())
 MODEL_OUTPUT = Path(os.environ.get('MODEL_OUTPUT_DIR') or (PROJ_ROOT / 'model_output'))
 
 #-------------------------------------------------------------#
