@@ -17,6 +17,7 @@ setup(
     author='Benedikt Arnarsson',
     author_email='benediktjens.arnarsson@gmail.com',
     packages=find_packages(),
+    package_data={ 'agentrs': 'py.typed' },
     include_package_data=True,
     url='https://github.com/Benni-Math/agentrs/',
     license='MIT',
